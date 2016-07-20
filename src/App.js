@@ -4,23 +4,25 @@ import React from 'react';
 
 class QueryTooltip extends React.Component {
   shouldComponentUpdate(nextProps) {
-    return this.props.query !== nextProps.query;
+    return nextProps.query !== this.props.query;
   }
 
   render() {
     return (
       <div className="popover left">
-        <div className="popover-content">{this.props.query}</div>
+        <div className="popover-content">
+          {this.props.query}
+        </div>
+
         <div className="arrow"/>
       </div>
     );
   }
 }
+
 class Query extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
-    if (nextProps.elapsed !== this.props.elapsed ||
-       (nextProps.query !== this.props.query && nextState.isHovered) ||
-       (nextState.isHovered && !this.state.isHovered)) {
+    if (nextProps.elapsed !== this.props.elapsed || nextState.isHovered && !this.state.isHovered) {
       return true;
     } else {
       return false;
@@ -46,8 +48,14 @@ class Query extends React.Component {
   render() {
     return (
       <td className="Query" onMouseOver={this._handleMouseOver.bind(this)} onMouseOut={this._handleMouseOut.bind(this)}>
-        {this.props.elapsed}
-        {this.state.isHovered && <QueryTooltip query={this.props.query} />}
+        <span>
+          {this.props.elapsed}
+        </span>
+
+        {this.state.isHovered &&
+          <QueryTooltip
+            query={this.props.query}
+            isHovered={this.state.isHovered} />}
       </td>
     );
   }
@@ -87,11 +95,7 @@ class QueryCount extends React.Component {
 
 class Database extends React.Component {
   shouldComponentUpdate(nextProps) {
-    if (nextProps.lastMutationId === this.props.lastMutationId) {
-      return false;
-    } else {
-      return true;
-    }
+    return nextProps.lastMutationId !== this.props.lastMutationId;
   }
 
   render() {
@@ -125,6 +129,29 @@ export default class DBMon extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.loadSamples();
+  }
+
+  render() {
+    let { databases } = this.state;
+
+    return (
+      <table className="table table-striped latest-data">
+        <tbody>
+          { databases.map((database, i) => (
+            <Database
+              key={i}
+              lastMutationId={database.lastMutationId}
+              name={database.dbname}
+              lastSample={database.lastSample}
+            />
+          )) }
+        </tbody>
+      </table>
+    );
+  }
+
   loadSamples() {
     this.setState({
       databases: Env.generateData(false).toArray()
@@ -132,28 +159,5 @@ export default class DBMon extends React.Component {
       Monitoring.renderRate.ping();
       setTimeout(() => this.loadSamples(), Env.timeout);
     });
-  }
-
-  componentDidMount() {
-    this.loadSamples();
-  }
-
-  render() {
-    return (
-      <table className="table table-striped latest-data">
-        <tbody>
-          {this.state.databases.map((database, i) => {
-            return (
-              <Database
-                key={i}
-                lastMutationId={database.lastMutationId}
-                name={database.dbname}
-                lastSample={database.lastSample}
-              />
-            );
-          })}
-        </tbody>
-      </table>
-    );
   }
 }

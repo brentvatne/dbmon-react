@@ -36,7 +36,10 @@ module.exports = {
         query: {
           cacheDirectory: true,
           presets: ['es2015', 'es2016', 'react'],
-          plugins: ['transform-object-rest-spread']
+          plugins: [
+            'transform-object-rest-spread',
+            'transform-react-inline-elements',
+          ]
         }
       },
       {
@@ -65,6 +68,18 @@ module.exports = {
     new HtmlWebpackPlugin({
       inject: true,
       template: path.resolve(__dirname, relative, 'index.html'),
+      minify: {
+        removeComments: true,
+        collapseWhitespace: true,
+        removeRedundantAttributes: true,
+        useShortDoctype: true,
+        removeEmptyAttributes: true,
+        removeStyleLinkTypeAttributes: true,
+        keepClosingSlash: true,
+        minifyJS: true,
+        minifyCSS: true,
+        minifyURLs: true
+      }
     }),
     new webpack.DefinePlugin({ 'process.env.NODE_ENV': '"production"' })
   ]
